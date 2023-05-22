@@ -93,17 +93,17 @@ public abstract class Event {
         return false;
     }
 
-    public static String getNext(ArrayList<ArrayList<Meeting>> meetings, ArrayList<WorkingHours> workingHours) {
+    public static String getNext(ArrayList<ArrayList<Meeting>> meetings, ArrayList<WorkingHours> workingHours, boolean delete) {
         if (meetings.get(0).isEmpty() || meetings.get(1).isEmpty()) {
             if (meetings.get(0).isEmpty() && meetings.get(1).isEmpty()) {
                 return (compareTime(workingHours.get(0).getEnd(), workingHours.get(1).getEnd()) == -1
                     ? workingHours.get(0).getEnd() : workingHours.get(1).getEnd());
             } else if (meetings.get(0).isEmpty()) {
-                meetings.get(1).remove(0);
+                if (delete) meetings.get(1).remove(0);
                 return (compareTime(workingHours.get(0).getEnd(), meetings.get(1).get(0).getStart()) == -1
                         ? workingHours.get(0).getEnd() : meetings.get(1).get(0).getStart());
             } else {
-                meetings.get(1).remove(1);
+                if (delete) meetings.get(1).remove(1);
                 return (compareTime(workingHours.get(1).getEnd(), meetings.get(0).get(0).getStart()) == -1
                         ? workingHours.get(1).getEnd() : meetings.get(0).get(0).getStart());
             }
@@ -112,13 +112,15 @@ public abstract class Event {
             int res = compareTime(meetings.get(0).get(0).getStart(), meetings.get(1).get(0).getStart());
             String ret = compareTime(meetings.get(0).get(0).getStart(), meetings.get(1).get(0).getStart()) == -1
                     ? meetings.get(0).get(0).getStart() : meetings.get(1).get(0).getStart();
-            if (res == 0) {
-                meetings.get(0).remove(0);
-                meetings.get(1).remove(0);
-            } else if (res == -1) {
-                meetings.get(0).remove(0);
-            } else {
-                meetings.get(1).remove(0);
+            if (delete) {
+                if (res == 0) {
+                    meetings.get(0).remove(0);
+                    meetings.get(1).remove(0);
+                } else if (res == -1) {
+                    meetings.get(0).remove(0);
+                } else {
+                    meetings.get(1).remove(0);
+                }
             }
             return ret;
         }
@@ -140,17 +142,33 @@ public abstract class Event {
         }
     }
 
-    public static String getEndOfOngoingEvent(String iterator, ArrayList<ArrayList<Meeting>> meetings, String duration, ArrayList<WorkingHours> workingHours) {
+    public static String getEndOfOngoingEvent(ArrayList<ArrayList<Meeting>> meetings, ArrayList<WorkingHours> workingHours, boolean remove) {
         if (meetings.get(0).isEmpty()) {
             if (meetings.get(1).isEmpty()) {
                 return workingHours.get(0).getEnd();
             }
+            if (remove) meetings.get(1).remove(0);
             return meetings.get(1).get(0).getEnd();
         } else if (meetings.get(1).isEmpty()) {
+            if (remove) meetings.get(1).remove(1);
             return meetings.get(0).get(0).getEnd();
         } else {
-            return (compareTime(meetings.get(1).get(0).getEnd(), meetings.get(0).get(0).getEnd()) == -1
+            String ret = (compareTime(meetings.get(1).get(0).getEnd(), meetings.get(0).get(0).getEnd()) == -1
                     ? meetings.get(1).get(0).getEnd() : meetings.get(0).get(0).getEnd());
+            if (remove) {
+                int comp = compareTime(meetings.get(1).get(0).getEnd(), meetings.get(0).get(0).getEnd());
+                if (comp == -1) {
+                    meetings.get(1).remove(0);
+                } else if (comp == 1) {
+                    meetings.get(0).remove(0);
+                } else {
+                    meetings.get(0).remove(0);
+                    meetings.get(1).remove(0);
+                }
+            }
+            return ret;
         }
     }
+
+
 }
